@@ -96,6 +96,13 @@ export default [
         }
       },
       {
+        input: true,
+        type: 'checkbox',
+        label: 'Allow Previous',
+        key: 'allowPrevious',
+        defaultValue: false,
+      },
+      {
         weight: 50,
         label: 'Panel Navigation Buttons',
         optionsLabelPosition: 'right',
