@@ -1,6 +1,6 @@
 import assert from 'power-assert';
 import Harness from '../../../test/harness';
-import { date } from '../../validator/rules';
+import Webform from '../../Webform';
 import DateTimeComponent from './DateTime';
 
 import {
@@ -14,18 +14,21 @@ describe('DateTime Component', () => {
   });
 
   it('Test formatting', (done) => {
-    Harness.testCreate(DateTimeComponent, comp2).then((dateTime) => {
+    const formElement = document.createElement('div');
+    const form = new Webform(formElement, { language: 'en', template: 'bootstrap3' });
+    form.setForm({ display: 'form', components: [comp2] }).then(() => {
+      const dateTime = form.components[0];
       const value = '2020-09-22T00:00:00';
       const formattedValue = '2020-09-22';
       const input = dateTime.element.querySelector('[ref="input"]');
       assert.equal(input.getAttribute('placeholder'), dateTime.component.format, 'Placeholder should be equal to the format');
-      dateTime.setValue(value);
+      form.submission = {
+        data: { date: value }
+      };
       setTimeout(() => {
-        assert.equal(input.value, formattedValue, 'Value should be formatted');
         assert.equal(dateTime.getValueAsString(value), formattedValue, 'getValueAsString should return formatted value');
         done();
       }, 250);
-      done();
     }).catch(done);
   });
 });
