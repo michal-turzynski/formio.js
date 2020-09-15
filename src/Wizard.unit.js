@@ -1,11 +1,15 @@
+import _ from 'lodash';
 import Harness from '../test/harness';
 import Wizard from './Wizard';
+import EditGrid from './components/editgrid/EditGrid';
 import Formio from './Formio';
 import assert from 'power-assert';
 import wizardCond from '../test/forms/wizardConditionalPages';
 import wizard from '../test/forms/wizardValidationOnPageChanged';
 import wizard1 from '../test/forms/wizardValidationOnNextBtn';
 import wizard2 from '../test/forms/wizardWithEditGrid';
+import wizard3 from '../test/forms/wizardWithAddWizardPage';
+import wizard4 from '../test/forms/wizardWithAddWizardPageField';
 
 describe('Wizard tests', () => {
   it('Should display editGrid submission data in readOnly mode', (done) => {
@@ -36,12 +40,12 @@ describe('Wizard tests', () => {
     wizardForm = new Wizard(formElement);
     wizardForm.setForm(wizard).then(() => {
       Harness.testErrors(wizardForm, {
-          data: {
-            a: '1',
-            c: '',
-            textField: ''
-          }
-        },
+        data: {
+          a: '1',
+          c: '',
+          textField: ''
+        }
+      },
         [{
           component: 'a',
           message: 'a must have at least 4 characters.'
@@ -146,5 +150,27 @@ describe('Wizard tests', () => {
 
     assert(valid, 'Should be valid');
     assert.equal(form.data.c, 'c', 'Should keep the value of a conditionally visible page.');
+  });
+
+  it('Should replace components of the current page with addWizardPage component', (done) => {
+    const formElement = document.createElement('div');
+    wizardForm = new Wizard(formElement);
+    const editGrid = new EditGrid(wizard4);
+    wizardForm.setForm(wizard3).then(() => {
+      wizardForm.prevPageState = _.clone(wizardForm.currentPage.components);
+      wizardForm.emit('renderRows', editGrid);
+
+      setTimeout(() => {
+        assert.deepEqual(wizardForm.currentPage.components[0].key, 'addWizardPage', 'The AddWizardPage component should replace the whole form on the page.');
+
+        setTimeout(() => {
+          wizardForm.emit('onSaveAddPage', editGrid);
+          assert.deepEqual(wizardForm.currentPage.components, wizardForm.prevPageState, 'Should return previous state.');
+
+          done();
+        }, 200);
+      }, 100);
+    })
+      .catch((err) => done(err));
   });
 });
